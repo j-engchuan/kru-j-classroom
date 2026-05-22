@@ -54,3 +54,4 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=ใส่_publishable_key_ของคุณคร
 
 ## บัญชีทดสอบ
 สร้างผ่านแท็บ "จัดการผู้ใช้" ในหน้าครู
+

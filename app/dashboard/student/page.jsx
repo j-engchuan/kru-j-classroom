@@ -56,13 +56,18 @@ export default function StudentDashboard() {
 
       const existing = isSubmitted(submitModal.id)
       if (existing) {
-        await supabase.from('submissions').update({ file_url: fileUrl, status: 'submitted', submitted_at: new Date().toISOString() }).eq('id', existing.id)
+        await supabase.from('submissions').update({
+          file_url: fileUrl,
+          status: 'submitted',
+          submitted_at: new Date(new Date().getTime() + 7 * 60 * 60 * 1000).toISOString()
+        }).eq('id', existing.id)
       } else {
         await supabase.from('submissions').insert({
           assignment_id: submitModal.id,
           student_id: user.student_id,
           file_url: fileUrl,
-          status: 'submitted'
+          status: 'submitted',
+          submitted_at: new Date(new Date().getTime() + 7 * 60 * 60 * 1000).toISOString()
         })
       }
       setUploadMsg('ส่งงานสำเร็จ!')
@@ -127,7 +132,7 @@ export default function StudentDashboard() {
                           <p className="font-semibold text-gray-800">{a.title}</p>
                           {a.description && <p className="text-xs text-gray-500 mt-1">{a.description}</p>}
                           <p className="text-xs mt-1" style={{ color: isOverdue(a.due_date) ? '#dc2626' : '#d97706' }}>
-                            📅 {a.due_date ? new Date(a.due_date).toLocaleString('th-TH') : 'ไม่กำหนด'}
+                            📅 {a.due_date ? new Date(a.due_date).toLocaleString('th-TH', { timeZone: 'Asia/Bangkok' }) : 'ไม่กำหนด'}
                             {isOverdue(a.due_date) && ' (เกินกำหนด)'}
                           </p>
                         </div>
@@ -150,19 +155,34 @@ export default function StudentDashboard() {
                   {submitted.map(a => {
                     const sub = isSubmitted(a.id)
                     return (
-                      <div key={a.id} className="bg-white rounded-xl p-4 flex justify-between items-center">
-                        <div>
-                          <p className="text-sm font-medium text-gray-800">{a.title}</p>
-                          <p className="text-xs text-gray-400">ส่งเมื่อ {new Date(sub.submitted_at).toLocaleString('th-TH', { timeZone: 'Asia/Bangkok' })}</p>
+                      <div key={a.id} className="bg-white rounded-xl p-4">
+                        <div className="flex justify-between items-start">
+                          <div className="flex-1">
+                            <p className="text-sm font-medium text-gray-800">{a.title}</p>
+                            <p className="text-xs text-gray-400 mt-0.5">ส่งเมื่อ {new Date(sub.submitted_at).toLocaleString('th-TH', { timeZone: 'Asia/Bangkok' })}</p>
+                          </div>
+                          <div className="flex items-center gap-2 ml-2">
+                            {sub.status === 'graded' && (
+                              <span className="text-green-600 font-bold text-sm">{sub.score} คะแนน</span>
+                            )}
+                            <span className={`text-xs px-2 py-1 rounded-full whitespace-nowrap ${sub.status === 'graded' ? 'bg-purple-50 text-purple-700' : 'bg-green-50 text-green-700'}`}>
+                              {sub.status === 'graded' ? 'ตรวจแล้ว' : 'รอตรวจ'}
+                            </span>
+                            {sub.status !== 'graded' && (
+                              <button onClick={() => { setSubmitModal(a); setFile(null); setUploadMsg('') }}
+                                className="text-white text-xs px-2 py-1 rounded-lg whitespace-nowrap"
+                                style={{ background: '#64748b' }}>
+                                ส่งใหม่
+                              </button>
+                            )}
+                          </div>
                         </div>
-                        <div className="flex items-center gap-2">
-                          {sub.status === 'graded' && (
-                            <span className="text-green-600 font-bold">{sub.score} คะแนน</span>
-                          )}
-                          <span className={`text-xs px-2 py-1 rounded-full ${sub.status === 'graded' ? 'bg-purple-50 text-purple-700' : 'bg-green-50 text-green-700'}`}>
-                            {sub.status === 'graded' ? 'ตรวจแล้ว' : 'รอตรวจ'}
-                          </span>
-                        </div>
+                        {sub.file_url && (
+                          <a href={sub.file_url} target="_blank" rel="noreferrer"
+                            className="inline-block mt-2 text-xs text-blue-500 hover:underline">
+                            📎 ดูไฟล์ที่ส่ง
+                          </a>
+                        )}
                       </div>
                     )
                   })}
@@ -207,7 +227,6 @@ export default function StudentDashboard() {
         )}
       </div>
 
-      {/* Submit Modal */}
       {submitModal && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-2xl w-full max-w-md p-6">
@@ -255,3 +274,4 @@ export default function StudentDashboard() {
     </div>
   )
 }
+

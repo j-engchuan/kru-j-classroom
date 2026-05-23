@@ -153,7 +153,7 @@ export default function StudentDashboard() {
                       <div key={a.id} className="bg-white rounded-xl p-4 flex justify-between items-center">
                         <div>
                           <p className="text-sm font-medium text-gray-800">{a.title}</p>
-                          <p className="text-xs text-gray-400">ส่งเมื่อ {new Date(sub.submitted_at).toLocaleString('th-TH')}</p>
+                          <p className="text-xs text-gray-400">ส่งเมื่อ {new Date(sub.submitted_at).toLocaleString('th-TH', { timeZone: 'Asia/Bangkok' })}</p>
                         </div>
                         <div className="flex items-center gap-2">
                           {sub.status === 'graded' && (
